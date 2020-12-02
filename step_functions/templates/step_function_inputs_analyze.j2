@@ -1,0 +1,58 @@
+{
+  "CreateCluster": true,
+  "TerminateCluster": true,
+  "ScriptBootstrapActionScript": "s3://{{ bootstrap_bucket }}/bootstrap_actions.sh",
+  "LogUri": "s3n://{{ logs_bucket }}",
+  "InstancesEc2KeyName": "{{ ec2_key_name }}",
+  "InstancesEc2SubnetId": "{{ ec2_subnet_id}}",
+  "JobFlowRole": "{{ emr_ec2_role }}",
+  "ServiceRole": "{{ emr_role }}",
+  "ArgsBakerySalesSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/analyze/bakery_sales_ssm.py"
+  ],
+  "ArgsMovieChoicesSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/analyze/movie_choices_ssm.py"
+  ],
+  "ArgsMovieRatingsSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/analyze/movies_avg_ratings_ssm.py",
+    "--start-date",
+    "2016-01-01 00:00:00",
+    "--end-date",
+    "2016-12-31 23:59:59"
+  ],
+  "ArgsStockVolatilitySsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/analyze/stock_volatility_ssm.py",
+    "--start-date",
+    "2017-01-01",
+    "--end-date",
+    "2018-12-31"
+  ]
+}

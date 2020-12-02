@@ -1,0 +1,226 @@
+{
+  "StartAt": "Should_Create_Cluster",
+  "States": {
+    "Should_Create_Cluster": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.CreateCluster",
+          "BooleanEquals": true,
+          "Next": "Create_A_Cluster"
+        },
+        {
+          "Variable": "$.CreateCluster",
+          "BooleanEquals": false,
+          "Next": "Enable_Termination_Protection"
+        }
+      ],
+      "Default": "Create_A_Cluster"
+    },
+    "Create_A_Cluster": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:createCluster.sync",
+      "Parameters": {
+        "Name": "demo-cluster-step-function",
+        "VisibleToAllUsers": true,
+        "ReleaseLabel": "emr-6.2.0",
+        "StepConcurrencyLevel": 5,
+        "BootstrapActions": [
+          {
+            "Name": "bootstrap-script",
+            "ScriptBootstrapAction": {
+              "Path.$": "$.ScriptBootstrapActionScript"
+            }
+          }
+        ],
+        "Applications": [
+          {
+            "Name": "Spark"
+          }
+        ],
+        "ServiceRole.$": "$.ServiceRole",
+        "JobFlowRole.$": "$.JobFlowRole",
+        "LogUri.$": "$.LogUri",
+        "Instances": {
+          "Ec2KeyName.$": "$.InstancesEc2KeyName",
+          "Ec2SubnetId.$": "$.InstancesEc2SubnetId",
+          "KeepJobFlowAliveWhenNoSteps": true,
+          "InstanceFleets": [
+            {
+              "InstanceFleetType": "MASTER",
+              "TargetOnDemandCapacity": 1,
+              "InstanceTypeConfigs": [
+                {
+                  "InstanceType": "m5.xlarge"
+                }
+              ]
+            },
+            {
+              "InstanceFleetType": "CORE",
+              "TargetSpotCapacity": 2,
+              "InstanceTypeConfigs": [
+                {
+                  "InstanceType": "r5.2xlarge"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ResultPath": "$.CreateClusterResult",
+      "Next": "Merge_Results"
+    },
+    "Merge_Results": {
+      "Type": "Pass",
+      "Parameters": {
+        "CreateCluster.$": "$.CreateCluster",
+        "TerminateCluster.$": "$.TerminateCluster",
+        "ClusterId.$": "$.CreateClusterResult.ClusterId",
+        "ArgsBakerySalesSsm.$": "$.ArgsBakerySalesSsm",
+        "ArgsMovieChoicesSsm.$": "$.ArgsMovieChoicesSsm",
+        "ArgsMovieRatingsSsm.$": "$.ArgsMovieRatingsSsm",
+        "ArgsStockVolatilitySsm.$": "$.ArgsStockVolatilitySsm"
+      },
+      "Next": "Enable_Termination_Protection"
+    },
+    "Enable_Termination_Protection": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:setClusterTerminationProtection",
+      "Parameters": {
+        "ClusterId.$": "$.ClusterId",
+        "TerminationProtected": true
+      },
+      "ResultPath": null,
+      "Next": "Add_Steps_Parallel"
+    },
+    "Add_Steps_Parallel": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Bakery_Sales",
+          "States": {
+            "Bakery_Sales": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
+              "Parameters": {
+                "ClusterId.$": "$.ClusterId",
+                "Step": {
+                  "Name": "Bakery Sales",
+                  "ActionOnFailure": "CONTINUE",
+                  "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args.$": "$.ArgsBakerySalesSsm"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Movie_Choices",
+          "States": {
+            "Movie_Choices": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::elasticmapreduce:addStep",
+              "Parameters": {
+                "ClusterId.$": "$.ClusterId",
+                "Step": {
+                  "Name": "Movie Choices",
+                  "ActionOnFailure": "CONTINUE",
+                  "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args.$": "$.ArgsMovieChoicesSsm"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Movie_Ratings",
+          "States": {
+            "Movie_Ratings": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
+              "Parameters": {
+                "ClusterId.$": "$.ClusterId",
+                "Step": {
+                  "Name": "Movie Ratings",
+                  "ActionOnFailure": "CONTINUE",
+                  "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args.$": "$.ArgsMovieRatingsSsm"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Stock_Volatility",
+          "States": {
+            "Stock_Volatility": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::elasticmapreduce:addStep.sync",
+              "Parameters": {
+                "ClusterId.$": "$.ClusterId",
+                "Step": {
+                  "Name": "Stock Volatility",
+                  "ActionOnFailure": "CONTINUE",
+                  "HadoopJarStep": {
+                    "Jar": "command-runner.jar",
+                    "Args.$": "$.ArgsStockVolatilitySsm"
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": null,
+      "Next": "Disable_Termination_Protection"
+    },
+    "Disable_Termination_Protection": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:setClusterTerminationProtection",
+      "Parameters": {
+        "ClusterId.$": "$.ClusterId",
+        "TerminationProtected": false
+      },
+      "ResultPath": null,
+      "Next": "Should_Terminate_Cluster"
+    },
+    "Should_Terminate_Cluster": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.TerminateCluster",
+          "BooleanEquals": true,
+          "Next": "Terminate_Cluster"
+        },
+        {
+          "Variable": "$.TerminateCluster",
+          "BooleanEquals": false,
+          "Next": "Wrapping_Up"
+        }
+      ],
+      "Default": "Wrapping_Up"
+    },
+    "Terminate_Cluster": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::elasticmapreduce:terminateCluster.sync",
+      "Parameters": {
+        "ClusterId.$": "$.ClusterId"
+      },
+      "Next": "Wrapping_Up"
+    },
+    "Wrapping_Up": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

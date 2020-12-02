@@ -1,0 +1,613 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description:  >
+  EMR Demo deploys deploys a VPC with one public subnet and an internet gateway
+  with a default route on the public subnet. It deploys a Glue database, crawlers,
+  and series of S3 buckets, to form a data lake.
+Parameters:
+  ProjectName:
+    Description: Environment name that is prefixed to resource names
+    Type: String
+  EnvironmentName:
+    Description: Environment name (e.g., Development, Test, Production)
+    Type: String
+  ClusterOwner:
+    Description: Owner of Cluster (e.g., Data Analysts, Marketing, Finance)
+    Type: String
+  VpcCIDR:
+    Description: The IP range (CIDR notation) for this VPC
+    Type: String
+  PublicSubnetCIDR:
+    Description: The IP range (CIDR notation) for the public subnet
+    Type: String
+  TerminationProtected:
+    Description: Set auto-termination on or off
+    Type: String
+  Ec2KeyName:
+    Description: EMR Master node SSH Keypair name
+    Type: String
+  MasterInstanceCount:
+    Description: Number of Master nodes
+    Type: Number
+  MasterInstanceType:
+    Description: EC2 instance type for Master nodes
+    Type: String
+  CoreInstanceCount:
+    Description: Number of Core nodes
+    Type: Number
+  CoreInstanceType:
+    Description: EC2 instance type for Core nodes
+    Type: String
+  ReleaseLabel:
+    Description: Version of EMR to deploy to cluster
+    Type: String
+  EbsRootVolumeSize:
+    Description: Size in GBs of EBS root volume
+    Type: String
+  BootstrapBucket:
+    Description: S3 bucket where EMR bootstrap script is located
+    Type: String
+Resources:
+  RawBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'raw', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      AccelerateConfiguration:
+        AccelerationStatus: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  ProcessedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'processed', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      AccelerateConfiguration:
+        AccelerationStatus: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  AnalyzedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'analyzed', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      AccelerateConfiguration:
+        AccelerationStatus: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  WorkBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'work', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      AccelerateConfiguration:
+        AccelerationStatus: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'logs', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  GlueDatabaseBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['emr-demo', 'glue-db', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  AirflowBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['airflow', 'emr-demo', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  GlueDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Description: 'EMR Demo Glue Data Catalog'
+        Name: 'emr_demo'
+        LocationUri: !Ref GlueDatabaseBucket
+  CrawlerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: EmrDemoCrawlerRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - glue.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyName: DemoCrawlerPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: '*'
+  RawCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: 'emr-demo-raw'
+      Role: !GetAtt 'CrawlerRole.Arn'
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: !Ref RawBucket
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'
+      TablePrefix: 'raw_'
+      Configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}}}"
+    DependsOn:
+      - CrawlerRole
+      - GlueDatabase
+      - RawBucket
+  ProcessedCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: 'emr-demo-processed'
+      Role: !GetAtt 'CrawlerRole.Arn'
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: !Ref ProcessedBucket
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'
+      TablePrefix: 'processed_'
+      Configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}}}"
+    DependsOn:
+      - CrawlerRole
+      - GlueDatabase
+      - ProcessedBucket
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !Ref PublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName} Public Subnet (AZ1)
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName} Public Routes
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet
+    DependsOn:
+      - PublicRouteTable
+      - PublicSubnet
+      - DefaultPublicRoute
+  NoIngressSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'no-ingress-sg'
+      GroupDescription: 'Security group with no ingress rule'
+      VpcId: !Ref VPC
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - 's3:*'
+            Resource:
+              - 'arn:aws:s3:::*'
+      RouteTableIds:
+        - !Ref PublicRouteTable
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcId: !Ref VPC
+      VpcEndpointType: Gateway
+#  SGGlueEndpoint:
+#    Type: AWS::EC2::SecurityGroup
+#    Properties:
+#      GroupDescription: SG for Endpoint
+#      VpcId: !Ref VPC
+#      SecurityGroupEgress:
+#        - IpProtocol: tcp
+#          FromPort: 80
+#          ToPort: 80
+#          CidrIp: 0.0.0.0/0
+#        - IpProtocol: tcp
+#          FromPort: 443
+#          ToPort: 443
+#          CidrIp: 0.0.0.0/0
+#      Tags:
+#        - Key: Name
+#          Value: !Ref ProjectName
+#  GlueEndpoint:
+#    Type: AWS::EC2::VPCEndpoint
+#    Properties:
+#      PrivateDnsEnabled: true
+#      SecurityGroupIds:
+#        - !Ref SGGlueEndpoint
+#      SubnetIds:
+#        - !Ref PublicSubnet
+#      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.glue'
+#      VpcId: !Ref VPC
+#      VpcEndpointType: Interface
+  Cluster:
+    Type: AWS::EMR::Cluster
+    Properties:
+      Applications:
+        - Name: 'Ganglia'
+        - Name: 'Hadoop'
+        - Name: 'Hive'
+        - Name: 'Spark'
+        - Name: 'Zeppelin'
+        - Name: 'JupyterEnterpriseGateway' # new to v6.2.0
+        - Name: 'Presto'
+      BootstrapActions:
+        - Name: bootstrap-script
+          ScriptBootstrapAction:
+            Path: !Join ['', ['s3://', !Ref BootstrapBucket, '/bootstrap_actions.sh']]
+      Configurations:
+        - Classification: hive-site
+          ConfigurationProperties:
+            hive.metastore.client.factory.class: 'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory'
+        - Classification: spark-hive-site
+          ConfigurationProperties:
+            hive.metastore.client.factory.class: 'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory'
+        - Classification: presto-connector-hive
+          ConfigurationProperties:
+            hive.metastore.glue.datacatalog.enabled: true
+      EbsRootVolumeSize: !Ref EbsRootVolumeSize
+      Instances:
+        Ec2KeyName: !Ref Ec2KeyName
+        MasterInstanceGroup:
+          InstanceCount: !Ref MasterInstanceCount
+          InstanceType: !Ref MasterInstanceType
+          Market: ON_DEMAND
+          Name: MASTER
+        CoreInstanceGroup:
+          InstanceCount: !Ref CoreInstanceCount
+          InstanceType: !Ref CoreInstanceType
+          Market: ON_DEMAND
+          Name: CORE
+        TerminationProtected: !Ref TerminationProtected
+        Ec2SubnetId: !Ref PublicSubnet
+      Name: 'demo-cluster-cloudformation'
+      JobFlowRole: !Ref EmrEc2InstanceProfile
+      ServiceRole: !Ref EmrRole
+      ReleaseLabel: !Ref ReleaseLabel
+      StepConcurrencyLevel: 5
+      VisibleToAllUsers: true
+      LogUri: !Sub s3://${LogsBucket}/
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName} Cluster
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Owner
+          Value: !Ref ClusterOwner
+    DependsOn:
+      - LogsBucket
+  EmrRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'EMR_DemoRole'
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: elasticmapreduce.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceRole'
+  EmrEc2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'EMR_EC2_DemoRole'
+      AssumeRolePolicyDocument:
+        Version: 2008-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role'
+      Policies:
+        - PolicyName: 'EmrEc2RoleSsmParams'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'ssm:*'
+                Resource: !Join [':', ['arn:aws:ssm', !Ref 'AWS::Region', !Ref 'AWS::AccountId', 'parameter/emr_demo*']]
+  EmrEc2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: 'EMR_EC2_DemoRole'
+      Path: /
+      Roles:
+        - !Ref EmrEc2Role
+  StateExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'State_ExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - states.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: 'StatesExecutionPolicyPassRole'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'iam:PassRole'
+                Resource: [
+                  !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId', ':role/', !Ref EmrRole]],
+                  !Join ['', ['arn:aws:iam::', !Ref 'AWS::AccountId', ':role/', !Ref EmrEc2Role]]
+                ]
+        - PolicyName: 'StatesExecutionPolicyLogs'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'logs:*'
+                Resource: '*'
+        - PolicyName: 'StatesExecutionPolicyEmr'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'elasticmapreduce:*'
+                Resource: 'arn:aws:elasticmapreduce:*:*:cluster/*'
+        - PolicyName: 'StatesExecutionPolicyEvents'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 'events:*'
+                Resource: '*'
+      Path: '/'
+  StateMachineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: 'EmrDemoStateMachineLogGroup'
+      RetentionInDays: 7
+  RawBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/bronze_bucket'
+      Type: String
+      Value: !Ref RawBucket
+      Description: Raw data bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  ProcessedBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/silver_bucket'
+      Type: String
+      Value: !Ref ProcessedBucket
+      Description: Processed data bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  AnalyzedBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/gold_bucket'
+      Type: String
+      Value: !Ref AnalyzedBucket
+      Description: Analyzed data bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  WorkBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/work_bucket'
+      Type: String
+      Value: !Ref WorkBucket
+      Description: Work bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  LogsBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/logs_bucket'
+      Type: String
+      Value: !Ref LogsBucket
+      Description: Logs bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  GlueDbBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/glue_db_bucket'
+      Type: String
+      Value: !Ref LogsBucket
+      Description: Logs bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  VpcIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/vpc_id'
+      Type: String
+      Value: !Ref VPC
+      Description: EMR cluster id
+      Tags:
+        Environment: !Ref EnvironmentName
+  ClusterIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/cluster_id'
+      Type: String
+      Value: !Ref Cluster
+      Description: EMR cluster id
+      Tags:
+        Environment: !Ref EnvironmentName
+  Ec2KeyNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/ec2_key_name'
+      Type: String
+      Value: !Ref Ec2KeyName
+      Description: EC2 Key pair name
+      Tags:
+        Environment: !Ref EnvironmentName
+  PublicSubnetParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/ec2_subnet_id'
+      Type: String
+      Value: !Ref PublicSubnet
+      Description: Public subnet id
+      Tags:
+        Environment: !Ref EnvironmentName
+  LogGroupArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/sm_log_group_arn'
+      Type: String
+      Value: !GetAtt StateMachineLogGroup.Arn
+      Description: State machine log group arn
+      Tags:
+        Environment: !Ref EnvironmentName
+  StateMachineRoleArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/sm_role_arn'
+      Type: String
+      Value: !GetAtt StateExecutionRole.Arn
+      Description: State machine role arn
+      Tags:
+        Environment: !Ref EnvironmentName
+  EmrEc2RoleRoleArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/emr_ec2_role'
+      Type: String
+      Value: !Ref EmrEc2Role
+      Description: Name of JobFlowRole role
+      Tags:
+        Environment: !Ref EnvironmentName
+  EmrRoleRoleArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/emr_role'
+      Type: String
+      Value: !Ref EmrRole
+      Description: Name of ServiceRole role
+      Tags:
+        Environment: !Ref EnvironmentName
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+  PublicSubnet:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet
+  ClusterID:
+    Description: EMR Cluster ID
+    Value: !Ref Cluster
+  StateExecutionRoleArn:
+    Description: State Machine Role Arn
+    Value: !GetAtt StateExecutionRole.Arn
+#  ExportCommands:
+#    Description: Export commands
+#    Value: !Join
+#      - ''
+#      - - 'export BRONZE_BUCKET='
+#        - !Ref RawBucket
+#        - ';export SILVER_BUCKET='
+#        - !Ref ProcessedBucket
+#        - ';export GOLD_BUCKET='
+#        - !Ref AnalyzedBucket
+#        - ';export WORK_BUCKET='
+#        - !Ref WorkBucket
+#        - ';export LOG_BUCKET='
+#        - !Ref LogsBucket
+#        - ';export GLUE_DB_BUCKET='
+#        - !Ref GlueDatabaseBucket
+#        - ';export CLUSTER_ID='
+#        - !Ref Cluster
+#        - ';export EC2_KEY_NAME='
+#        - !Ref Ec2KeyName
+#        - ';export SUBNET_ID='
+#        - !Ref PublicSubnet
+#        - ';export EMR_VPC='
+#        - !Ref VPC
+#        - ';export SM_ROLE='
+#        - !GetAtt StateExecutionRole.Arn
+#        - ';export SM_LOG_GROUP='
+#        - !GetAtt StateMachineLogGroup.Arn

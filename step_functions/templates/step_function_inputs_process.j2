@@ -1,0 +1,40 @@
+{
+  "CreateCluster": true,
+  "TerminateCluster": true,
+  "ScriptBootstrapActionScript": "s3://{{ bootstrap_bucket }}/bootstrap_actions.sh",
+  "LogUri": "s3n://{{ logs_bucket }}",
+  "InstancesEc2KeyName": "{{ ec2_key_name }}",
+  "InstancesEc2SubnetId": "{{ ec2_subnet_id}}",
+  "JobFlowRole": "{{ emr_ec2_role }}",
+  "ServiceRole": "{{ emr_role }}",
+  "ArgsBakerySsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/process/bakery_csv_to_parquet_ssm.py"
+  ],
+  "ArgsMovieRatingsSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/process/movies_csv_to_parquet_ssm.py"
+  ],
+  "ArgsStocksSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://{{ work_bucket }}/stocks_csv_to_parquet_ssm.py"
+  ]
+}

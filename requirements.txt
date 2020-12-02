@@ -1,0 +1,4 @@
+Jinja2
+boto3
+ec2_metadata
+botocore

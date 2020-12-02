@@ -1,0 +1,40 @@
+{
+  "CreateCluster": true,
+  "TerminateCluster": true,
+  "ScriptBootstrapActionScript": "s3://emr-demo-bootstrap-676164205626-us-east-1/bootstrap_actions.sh",
+  "LogUri": "s3n://emr-demo-logs-676164205626-us-east-1",
+  "InstancesEc2KeyName": "emr-demo-676164205626-us-east-1",
+  "InstancesEc2SubnetId": "subnet-06aa61f790a932b32",
+  "JobFlowRole": "EMR_EC2_DemoRole",
+  "ServiceRole": "EMR_DemoRole",
+  "ArgsBakerySsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://emr-demo-work-676164205626-us-east-1/process/bakery_csv_to_parquet_ssm.py"
+  ],
+  "ArgsMovieRatingsSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://emr-demo-work-676164205626-us-east-1/process/movies_csv_to_parquet_ssm.py"
+  ],
+  "ArgsStocksSsm": [
+    "spark-submit",
+    "--deploy-mode",
+    "cluster",
+    "--master",
+    "yarn",
+    "--conf",
+    "spark.yarn.submit.waitAppCompletion=true",
+    "s3a://emr-demo-work-676164205626-us-east-1/stocks_csv_to_parquet_ssm.py"
+  ]
+}
