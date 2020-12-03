@@ -109,15 +109,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref ProjectName
-  AirflowBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Join ['-', ['airflow', 'emr-demo', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
-      VersioningConfiguration:
-        Status: Enabled
-      Tags:
-        - Key: Name
-          Value: !Ref ProjectName
   GlueDatabase:
     Type: AWS::Glue::Database
     Properties:
@@ -264,34 +255,6 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
       VpcId: !Ref VPC
       VpcEndpointType: Gateway
-#  SGGlueEndpoint:
-#    Type: AWS::EC2::SecurityGroup
-#    Properties:
-#      GroupDescription: SG for Endpoint
-#      VpcId: !Ref VPC
-#      SecurityGroupEgress:
-#        - IpProtocol: tcp
-#          FromPort: 80
-#          ToPort: 80
-#          CidrIp: 0.0.0.0/0
-#        - IpProtocol: tcp
-#          FromPort: 443
-#          ToPort: 443
-#          CidrIp: 0.0.0.0/0
-#      Tags:
-#        - Key: Name
-#          Value: !Ref ProjectName
-#  GlueEndpoint:
-#    Type: AWS::EC2::VPCEndpoint
-#    Properties:
-#      PrivateDnsEnabled: true
-#      SecurityGroupIds:
-#        - !Ref SGGlueEndpoint
-#      SubnetIds:
-#        - !Ref PublicSubnet
-#      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.glue'
-#      VpcId: !Ref VPC
-#      VpcEndpointType: Interface
   Cluster:
     Type: AWS::EMR::Cluster
     Properties:
@@ -301,7 +264,7 @@ Resources:
         - Name: 'Hive'
         - Name: 'Spark'
         - Name: 'Zeppelin'
-        - Name: 'JupyterEnterpriseGateway' # new to v6.2.0
+        - Name: 'JupyterEnterpriseGateway' # only for new v5.31.0 and v6.2.0
         - Name: 'Presto'
       BootstrapActions:
         - Name: bootstrap-script
@@ -570,44 +533,3 @@ Resources:
       Description: Name of ServiceRole role
       Tags:
         Environment: !Ref EnvironmentName
-Outputs:
-  VPC:
-    Description: A reference to the created VPC
-    Value: !Ref VPC
-  PublicSubnet:
-    Description: A reference to the public subnet in the 1st Availability Zone
-    Value: !Ref PublicSubnet
-  ClusterID:
-    Description: EMR Cluster ID
-    Value: !Ref Cluster
-  StateExecutionRoleArn:
-    Description: State Machine Role Arn
-    Value: !GetAtt StateExecutionRole.Arn
-#  ExportCommands:
-#    Description: Export commands
-#    Value: !Join
-#      - ''
-#      - - 'export BRONZE_BUCKET='
-#        - !Ref RawBucket
-#        - ';export SILVER_BUCKET='
-#        - !Ref ProcessedBucket
-#        - ';export GOLD_BUCKET='
-#        - !Ref AnalyzedBucket
-#        - ';export WORK_BUCKET='
-#        - !Ref WorkBucket
-#        - ';export LOG_BUCKET='
-#        - !Ref LogsBucket
-#        - ';export GLUE_DB_BUCKET='
-#        - !Ref GlueDatabaseBucket
-#        - ';export CLUSTER_ID='
-#        - !Ref Cluster
-#        - ';export EC2_KEY_NAME='
-#        - !Ref Ec2KeyName
-#        - ';export SUBNET_ID='
-#        - !Ref PublicSubnet
-#        - ';export EMR_VPC='
-#        - !Ref VPC
-#        - ';export SM_ROLE='
-#        - !GetAtt StateExecutionRole.Arn
-#        - ';export SM_LOG_GROUP='
-#        - !GetAtt StateMachineLogGroup.Arn
