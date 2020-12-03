@@ -23,6 +23,8 @@ def main():
 
 
 def render_template(template_name, params):
+    """ Render inputs file Jinja2 template using SSM Parameter Store parameter values """
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     template_dir = f'{dir_path}/step_functions/templates'
     template_loader = jinja2.FileSystemLoader(searchpath=template_dir)

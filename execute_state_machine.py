@@ -49,6 +49,8 @@ def get_state_machine_arn(state_machine_name):
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-s', '--state-machine', required=True,
                         choices=['EMR-Demo-Process', 'EMR-Demo-Analysis'],

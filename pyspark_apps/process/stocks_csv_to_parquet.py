@@ -56,6 +56,8 @@ def write_parquet(df_stocks_all, args):
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description="Arguments required for script.")
     parser.add_argument("--bronze-bucket", required=True, help="Raw data location")
     parser.add_argument("--silver-bucket", required=True, help="Processed data location")

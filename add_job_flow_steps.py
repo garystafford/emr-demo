@@ -39,7 +39,9 @@ def add_job_flow_steps(cluster_id, steps):
 
 
 def get_steps(params, job_type):
-    """Load EMR Steps from a separate JSON-format file and substitutes tags for SSM parameter values"""
+    """
+    Load EMR Steps from a separate JSON-format file and substitutes tags for SSM parameter values
+    """
 
     f = open(f'job_flow_steps_{job_type}.json', 'r')
     steps = json.load(f)

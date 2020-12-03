@@ -49,6 +49,8 @@ def main():
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description="Arguments required for script.")
     parser.add_argument("--gold-bucket", required=True, help="Analyzed data location")
     parser.add_argument("--start-date", required=True, help="Start of date and time range")

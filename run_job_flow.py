@@ -17,6 +17,7 @@ emr_client = boto3.client('emr')
 
 def main():
     args = parse_args()
+
     params = parameters.get_parameters()
     steps = get_steps(params, args.job_type)
     run_job_flow(params, steps)
@@ -109,7 +110,9 @@ def run_job_flow(params, steps):
 
 
 def get_steps(params, job_type):
-    """Load EMR Steps from a separate JSON-format file and substitutes tags for SSM parameter values"""
+    """
+    Load EMR Steps from a separate JSON-format file and substitutes tags for SSM parameter values
+    """
 
     f = open(f'job_flow_steps_{job_type}.json', 'r')
     steps = json.load(f)

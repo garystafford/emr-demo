@@ -31,6 +31,8 @@ def start_crawler(crawler_name):
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-c', '--crawler-name', required=True, help='Name of EC2 Keypair')
 

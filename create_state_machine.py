@@ -61,6 +61,8 @@ def create_state_machine(definition, sm_name, sm_log_group_arn, sm_role_arn):
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-d', '--definition-file', required=True, help='Name of definition file')
     parser.add_argument('-s', '--state-machine', required=True, help='Name of state machine to create')

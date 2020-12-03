@@ -43,6 +43,8 @@ def write_parquet(df_bakery, params):
 
 
 def get_parameters():
+    """Load parameter values from AWS Systems Manager (SSM) Parameter Store"""
+
     params = {
         'bronze_bucket': ssm_client.get_parameter(Name='/emr_demo/bronze_bucket')['Parameter']['Value'],
         'silver_bucket': ssm_client.get_parameter(Name='/emr_demo/silver_bucket')['Parameter']['Value']

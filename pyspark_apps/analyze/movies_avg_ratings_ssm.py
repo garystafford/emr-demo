@@ -57,6 +57,8 @@ def main():
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description="Arguments required for script.")
     parser.add_argument("--start-date", required=True, help="Start of date and time range")
     parser.add_argument("--end-date", required=True, help="End of date and time range")
@@ -66,6 +68,8 @@ def parse_args():
 
 
 def get_parameters():
+    """Load parameter values from AWS Systems Manager (SSM) Parameter Store"""
+
     params = {
         'gold_bucket': ssm_client.get_parameter(Name='/emr_demo/gold_bucket')['Parameter']['Value']
     }

@@ -38,6 +38,8 @@ def main():
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description="Arguments required for script.")
     parser.add_argument("--silver-bucket", required=True, help="Processed data location")
     parser.add_argument("--gold-bucket", required=True, help="Analyzed data location")

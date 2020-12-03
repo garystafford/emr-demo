@@ -54,6 +54,8 @@ def create_state_machine(definition, state_machine_arn, sm_log_group_arn, sm_rol
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-d', '--definition-file', required=True, help='Name of definition file')
     parser.add_argument('-a', '--state-machine-arn', required=True, help='Arn of state machine to update')

@@ -153,10 +153,10 @@ def _parse_parameters(parameters):
 
 
 def parse_args():
+    """Parse argument values from command-line"""
+
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-k', '--ec2-key-name', required=True, help='Name of EC2 Keypair')
-    parser.add_argument('-a', '--action', required=False, default='create',
-                        help='CloudFormation stack action', choices=['create', 'update'])
 
     args = parser.parse_args()
     return args

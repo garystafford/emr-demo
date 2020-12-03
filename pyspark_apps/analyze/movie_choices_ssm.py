@@ -81,6 +81,8 @@ def main():
 
 
 def get_parameters():
+    """Load parameter values from AWS Systems Manager (SSM) Parameter Store"""
+
     params = {
         'gold_bucket': ssm_client.get_parameter(Name='/emr_demo/gold_bucket')['Parameter']['Value']
     }
