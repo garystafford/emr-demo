@@ -273,4 +273,4 @@ data/
 # exclude data files
 *.csv
 *.parquet
-step_functions/inputs
+step_functions/inputs/*.json
