@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description:  >
-  EMR Demo deploys deploys a VPC with one public subnet and an internet gateway
-  with a default route on the public subnet. It deploys a Glue database, crawlers,
-  and series of S3 buckets, to form a data lake.
+  Stack for PySparkon EMR Demo. Deploys a VPC with one public subnet and an internet gateway
+  with a default route on the public subnet. Deploys a Glue database, crawlers,
+  and series of S3 buckets, to form a data lake, and an EMR cluster.
 Parameters:
   ProjectName:
     Description: Environment name that is prefixed to resource names
