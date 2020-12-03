@@ -1,4 +1,4 @@
-# Amazon PySpark EMR Demo
+# PySpark on Amazon EMR Demo
 
 ## Overview
 
