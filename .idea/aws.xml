@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="accountSettings">
+    <option name="activeProfile" value="profile:demo-account-1-Admin-01" />
     <option name="activeRegion" value="us-east-1" />
     <option name="recentlyUsedProfiles">
       <list>
+        <option value="profile:demo-account-1-Admin-01" />
+        <option value="profile:378568318651-Admin-01" />
         <option value="profile:default" />
       </list>
     </option>

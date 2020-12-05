@@ -1,4 +1,5 @@
-Jinja2
-boto3
+Jinja2~=2.11.2
+boto3~=1.15.18
 ec2_metadata
-botocore
+botocore~=1.18.18
+pyspark~=2.4.4
