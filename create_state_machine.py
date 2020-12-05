@@ -29,6 +29,8 @@ def main():
 
 
 def create_state_machine(definition, sm_name, sm_log_group_arn, sm_role_arn):
+    """Creates the AWS Step Functions state machine"""
+
     try:
         response = step_functions_client.create_state_machine(
             name=sm_name,

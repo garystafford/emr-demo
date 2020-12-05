@@ -28,6 +28,8 @@ def main():
 
 
 def start_execution(state_machine_arn, input_params):
+    """Starts execution of the AWS Step Functions state machine"""
+
     try:
         response = step_functions_client.start_execution(
             stateMachineArn=state_machine_arn,

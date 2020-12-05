@@ -19,6 +19,8 @@ def main():
 
 
 def start_crawler(crawler_name):
+    """Start the specified AWS Glue Crawler"""
+
     try:
         response = glue_client.start_crawler(
             Name=crawler_name

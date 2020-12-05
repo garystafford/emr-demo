@@ -10,6 +10,7 @@ import logging
 
 import boto3
 from botocore.exceptions import ClientError
+
 from parameters import parameters
 
 emr_client = boto3.client('emr')

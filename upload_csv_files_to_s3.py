@@ -25,12 +25,14 @@ def main():
 
 
 def upload_directory(path, bucket_name):
+    """Uploads a directory of raw CSV files to Amazon S3"""
+
     for root, dirs, files in os.walk(path):
         for file in files:
             try:
-                if file != '_placeholder' or file != '.DS_Store': # ignore these files
+                if file != '_placeholder' or file != '.DS_Store':  # ignore these files
                     file_directory = os.path.basename(os.path.dirname(os.path.join(root, file)))
-                    if file == 'BreadBasket_DMS.csv': # rename this file
+                    if file == 'BreadBasket_DMS.csv':  # rename this file
                         key = f'{file_directory}/bakery.csv'
                     else:
                         key = f'{file_directory}/{file}'

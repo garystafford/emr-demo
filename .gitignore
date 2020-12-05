@@ -274,3 +274,4 @@ data/
 *.csv
 *.parquet
 step_functions/inputs/*.json
+_backups/

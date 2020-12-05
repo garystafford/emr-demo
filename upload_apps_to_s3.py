@@ -25,6 +25,8 @@ def main():
 
 
 def upload_directory(path, bucket_name):
+    """Uploads a directory of PySpark application files to Amazon S3"""
+
     for root, dirs, files in os.walk(path):
         for file in files:
             try:
