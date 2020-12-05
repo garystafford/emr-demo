@@ -8,9 +8,9 @@ Project files for the post, [Running PySpark Applications on Amazon EMR: Methods
 
 ### AWS CloudFormation Stack Creation
 
-![Architecture](./CFN_Architecture.png)
+![Architecture](images/CFN_Architecture.png)
   
   
 ### Data Analytics Platform
 
-![Architecture](./Workflow_Architecture.png)
+![Architecture](images/Workflow_Architecture.png)
