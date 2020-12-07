@@ -25,7 +25,7 @@ def start_crawler(crawler_name):
         response = glue_client.start_crawler(
             Name=crawler_name
         )
-        print(f' Response: {response}')
+        print(f'Response: {response}')
     except ClientError as e:
         logging.error(e)
         return False

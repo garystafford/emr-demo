@@ -24,10 +24,6 @@
     "ParameterValue": "true"
   },
   {
-    "ParameterKey": "Ec2KeyName",
-    "ParameterValue": "placeholder-ec2-key-name"
-  },
-  {
     "ParameterKey": "MasterInstanceCount",
     "ParameterValue": "1"
   },
@@ -50,9 +46,5 @@
   {
     "ParameterKey": "EbsRootVolumeSize",
     "ParameterValue": "32"
-  },
-  {
-    "ParameterKey": "BootstrapBucket",
-    "ParameterValue": "placeholder-bootstrap-bucket"
   }
 ]
