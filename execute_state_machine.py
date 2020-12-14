@@ -44,7 +44,7 @@ def start_execution(state_machine_arn, input_params):
 
 
 def get_state_machine_arn(state_machine_name):
-    state_machines = stepfunctions_client.list_state_machines()
+    state_machines = step_functions_client.list_state_machines()
     state_machine_arn = (list(filter(lambda arn: arn['name'] == state_machine_name,
                                      state_machines['stateMachines'])))[0]['stateMachineArn']
     return state_machine_arn
