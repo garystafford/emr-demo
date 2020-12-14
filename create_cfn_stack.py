@@ -3,7 +3,9 @@
 # Purpose: Create EMR bootstrap script(s) bucket
 # Author:  Gary A. Stafford (December 2020)
 # Reference: https://gist.github.com/svrist/73e2d6175104f7ab4d201280acba049c
-# Usage Example: python3 ./create_cfn_stack.py --ec2-key-name emr-demo-123456789012-us-east-1
+# Usage Example: python3 ./create_cfn_stack.py \
+#                    --environment dev \
+#                    --ec2-key-name emr-demo-123456789012-us-east-1
 
 import argparse
 import json
