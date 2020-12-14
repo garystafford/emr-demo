@@ -1,8 +1,12 @@
 #!/bin/bash
 
-# set region for boto3
+# Purpose: EMR bootstrap script
+# Author:  Gary A. Stafford (December 2020)
+
+# update and install some useful yum packages
 sudo yum install -y jq
 
+# set region for boto3
 aws configure set region \
   "$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)"
 

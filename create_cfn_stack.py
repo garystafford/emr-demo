@@ -36,9 +36,9 @@ def main():
     upload_file(f'{dir_path}/bootstrap_emr/bootstrap_actions.sh', bucket_name, 'bootstrap_actions.sh')
 
     # create stack
-    stack_name = 'emr-demo-dev'
+    stack_name = f'emr-demo-{args.environment}'
     cfn_template_path = f'{dir_path}/cloudformation/emr-demo.yml'
-    cfn_params_path = f'{dir_path}/cloudformation/emr-demo-params-dev.json'
+    cfn_params_path = f'{dir_path}/cloudformation/emr-demo-params-{args.environment}.json'
     ec2_key_name = args.ec2_key_name
     create_stack(stack_name, cfn_template_path, cfn_params_path, ec2_key_name, bucket_name)
 
@@ -147,6 +147,7 @@ def parse_args():
     """Parse argument values from command-line"""
 
     parser = argparse.ArgumentParser(description='Arguments required for script.')
+    parser.add_argument('-e', '--environment', required=True, choices=['dev', 'test'], help='Environment')
     parser.add_argument('-k', '--ec2-key-name', required=True, help='Name of EC2 Keypair')
 
     args = parser.parse_args()
