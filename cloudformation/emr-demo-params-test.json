@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "EMR Demo Project"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "Test"
+  },
+  {
+    "ParameterKey": "ClusterOwner",
+    "ParameterValue": "Data Analytics Test Team"
+  },
+  {
+    "ParameterKey": "VpcCIDR",
+    "ParameterValue": "10.192.0.0/16"
+  },
+  {
+    "ParameterKey": "PublicSubnetCIDR",
+    "ParameterValue": "10.192.10.0/24"
+  },
+  {
+    "ParameterKey": "TerminationProtected",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "MasterInstanceCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MasterInstanceType",
+    "ParameterValue": "m5.xlarge"
+  },
+  {
+    "ParameterKey": "CoreInstanceCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "CoreInstanceType",
+    "ParameterValue": "r5.xlarge"
+  },
+  {
+    "ParameterKey": "ReleaseLabel",
+    "ParameterValue": "emr-6.2.0"
+  },
+  {
+    "ParameterKey": "EbsRootVolumeSize",
+    "ParameterValue": "32"
+  }
+]
