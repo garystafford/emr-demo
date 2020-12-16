@@ -28,7 +28,7 @@ def delete_buckets(buckets):
             bucket_to_delete = s3_client.Bucket(bucket)
             bucket_to_delete.object_versions.delete()
             bucket_to_delete.delete()
-            print(f"Bucket deleted: {bucket}")
+            logging.info(f"Bucket deleted: {bucket}")
         except ClientError as e:
             logging.error(e)
 
