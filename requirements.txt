@@ -3,3 +3,4 @@ boto3~=1.15.18
 ec2_metadata
 botocore~=1.18.18
 pyspark~=2.4.4
+paramiko~=2.7.0

@@ -10,6 +10,8 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 ssm_client = boto3.client('ssm')
 emr_client = boto3.client('emr')
 

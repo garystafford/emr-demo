@@ -21,7 +21,7 @@ cfn_client = boto3.client('cloudformation')
 region = boto3.DEFAULT_SESSION.region_name
 s3_client = boto3.client('s3', region_name=region)
 
-logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
 
 
 def main():

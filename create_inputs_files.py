@@ -10,6 +10,8 @@ import jinja2
 
 from parameters import parameters
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 
 def main():
     params = parameters.get_parameters()

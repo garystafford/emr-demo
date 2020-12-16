@@ -8,6 +8,8 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 s3_client = boto3.resource('s3')
 ssm_client = boto3.client('ssm')
 

@@ -9,6 +9,8 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 glue_client = boto3.client('glue')
 
 

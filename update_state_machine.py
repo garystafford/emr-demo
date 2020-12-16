@@ -13,6 +13,8 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 step_functions_client = boto3.client('stepfunctions')
 ssm_client = boto3.client('ssm')
 

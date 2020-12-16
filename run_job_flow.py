@@ -13,6 +13,8 @@ from botocore.exceptions import ClientError
 
 from parameters import parameters
 
+logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
+
 emr_client = boto3.client('emr')
 
 
