@@ -533,3 +533,12 @@ Resources:
       Description: Name of ServiceRole role
       Tags:
         Environment: !Ref EnvironmentName
+  ClusterMasterPublicDNS:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/master_public_dns'
+      Type: String
+      Value: !GetAtt Cluster.MasterPublicDNS
+      Description: Master Node Public DNS
+      Tags:
+        Environment: !Ref EnvironmentName
