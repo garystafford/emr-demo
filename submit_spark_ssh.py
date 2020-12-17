@@ -35,13 +35,14 @@ def submit_job(master_public_dns, username, ec2_key_path, work_bucket):
         command=f"""
             spark-submit --deploy-mode cluster --master yarn \
             --conf spark.yarn.submit.waitAppCompletion=true \
-            s3a://{work_bucket}/analyze/bakery_sales_ssm.py""",
-        get_pty=True)
+            s3a://{work_bucket}/analyze/bakery_sales_ssm.py"""
+    )
 
-    stdout_.channel.recv_exit_status()
-    lines = stdout_.readlines()
-    for line in lines:
-        logging.info(line)
+    stdout_lines = ''
+    while not stdout_.channel.exit_status_ready():
+        if stdout_.channel.recv_ready():
+            stdout_lines = stdout_.readlines()
+    logging.info(' '.join(map(str, stdout_lines)))
 
     ssh.close()
 
