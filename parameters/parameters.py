@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Purpose: Get SSM Parameter Store parameters
-# Author:  Gary A. Stafford (November 2020)
+# Author:  Gary A. Stafford (December 2020)
 
 import boto3
 
@@ -22,6 +22,7 @@ def get_parameters():
         'glue_db_bucket': ssm_client.get_parameter(Name='/emr_demo/glue_db_bucket')['Parameter']['Value'],
         'gold_bucket': ssm_client.get_parameter(Name='/emr_demo/gold_bucket')['Parameter']['Value'],
         'logs_bucket': ssm_client.get_parameter(Name='/emr_demo/logs_bucket')['Parameter']['Value'],
+        'master_public_dns': ssm_client.get_parameter(Name='/emr_demo/master_public_dns')['Parameter']['Value'],
         'silver_bucket': ssm_client.get_parameter(Name='/emr_demo/silver_bucket')['Parameter']['Value'],
         'sm_log_group_arn': ssm_client.get_parameter(Name='/emr_demo/sm_log_group_arn')['Parameter']['Value'],
         'sm_role_arn': ssm_client.get_parameter(Name='/emr_demo/sm_role_arn')['Parameter']['Value'],
