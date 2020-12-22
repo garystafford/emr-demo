@@ -109,6 +109,15 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref ProjectName
+  AirflowBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join ['-', ['airflow', !Ref 'AWS::AccountId', !Ref 'AWS::Region']]
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Name
+          Value: !Ref ProjectName
   GlueDatabase:
     Type: AWS::Glue::Database
     Properties:
@@ -459,6 +468,15 @@ Resources:
       Type: String
       Value: !Ref LogsBucket
       Description: Logs bucket name
+      Tags:
+        Environment: !Ref EnvironmentName
+  AirflowBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/emr_demo/airflow_bucket'
+      Type: String
+      Value: !Ref AirflowBucket
+      Description: MWAA (Airflow) bucket name
       Tags:
         Environment: !Ref EnvironmentName
   VpcIdParameter:
