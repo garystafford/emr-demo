@@ -12,6 +12,7 @@ def get_parameters():
     """Load parameter values from AWS Systems Manager (SSM) Parameter Store"""
 
     params = {
+        'airflow_bucket': ssm_client.get_parameter(Name='/emr_demo/airflow_bucket')['Parameter']['Value'],
         'bootstrap_bucket': ssm_client.get_parameter(Name='/emr_demo/bootstrap_bucket')['Parameter']['Value'],
         'bronze_bucket': ssm_client.get_parameter(Name='/emr_demo/bronze_bucket')['Parameter']['Value'],
         'cluster_id': ssm_client.get_parameter(Name='/emr_demo/cluster_id')['Parameter']['Value'],
