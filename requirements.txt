@@ -1,6 +1,7 @@
-Jinja2~=2.11.2
-boto3~=1.16.4
-ec2_metadata~=2.3.0
-botocore~=1.19.44
-pyspark~=3.0.1
-paramiko~=2.7.0
+# python3 -m pip install --user -U -r requirements.txt
+boto3
+botocore
+ec2_metadata
+Jinja2
+paramiko
+pyspark
