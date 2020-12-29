@@ -20,6 +20,7 @@ ssm_client = boto3.client('ssm')
 cfn_client = boto3.client('cloudformation')
 region = boto3.DEFAULT_SESSION.region_name
 s3_client = boto3.client('s3', region_name=region)
+s3 = boto3.resource('s3')
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -27,17 +28,20 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=lo
 def main():
     args = parse_args()
 
-    # create bucket
+    # create and tag bucket
     account_id = sts_client.get_caller_identity()['Account']
     bucket_name = f'emr-demo-bootstrap-{account_id}-{region}'
     create_bucket(bucket_name)
-    put_parameter(bucket_name)
+    tag_bucket(bucket_name)
+
+    # create ssm parameter
+    put_ssm_parameter(bucket_name)
 
     # upload files
     dir_path = os.path.dirname(os.path.realpath(__file__))
     upload_file(f'{dir_path}/bootstrap_emr/bootstrap_actions.sh', bucket_name, 'bootstrap_actions.sh')
 
-    # create stack
+    # create cfn stack
     stack_name = f'emr-demo-{args.environment}'
     cfn_template_path = f'{dir_path}/cloudformation/emr-demo.yml'
     cfn_params_path = f'{dir_path}/cloudformation/emr-demo-params-{args.environment}.json'
@@ -56,6 +60,27 @@ def create_bucket(bucket_name):
         s3_client.create_bucket(Bucket=bucket_name)
         logging.info(f'New bucket name: {bucket_name}')
     except ClientError as e:
+        logging.error(e)
+        return False
+    return True
+
+
+def tag_bucket(bucket_name):
+    """Apply the common 'Name' tag and value to the bucket"""
+    try:
+        bucket_tagging = s3.BucketTagging(bucket_name)
+        response = bucket_tagging.put(
+            Tagging={
+                'TagSet': [
+                    {
+                        'Key': 'Name',
+                        'Value': 'EMR Demo Project'
+                    },
+                ]
+            }
+        )
+        logging.info(f'Response: {response}')
+    except Exception as e:
         logging.error(e)
         return False
     return True
@@ -80,7 +105,7 @@ def upload_file(file_name, bucket, object_name):
     return True
 
 
-def put_parameter(bucket_name):
+def put_ssm_parameter(bucket_name):
     try:
         response = ssm_client.put_parameter(
             Name='/emr_demo/bootstrap_bucket',
