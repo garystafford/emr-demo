@@ -95,7 +95,6 @@ def upload_file(file_name, bucket, object_name):
     :return: True if file was uploaded, else False
     """
 
-    # Upload the file
     try:
         s3_client.upload_file(file_name, bucket, object_name)
         logging.info(f'File {file_name} uploaded to bucket {bucket} as object {object_name}')
