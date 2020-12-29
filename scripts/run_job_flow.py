@@ -7,11 +7,12 @@
 import argparse
 import json
 import logging
+import os
 
 import boto3
 from botocore.exceptions import ClientError
 
-from parameters import parameters
+from scripts.parameters import parameters
 
 logging.basicConfig(format='[%(asctime)s] %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -117,8 +118,10 @@ def get_steps(params, job_type):
     Load EMR Steps from a separate JSON-format file and substitutes tags for SSM parameter values
     """
 
-    f = open(f'job_flow_steps_{job_type}.json', 'r')
-    steps = json.load(f)
+    dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    file = open(f'{dir_path}/job_flow_steps/job_flow_steps_{job_type}.json', 'r')
+
+    steps = json.load(file)
     new_steps = []
 
     for step in steps:

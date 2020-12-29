@@ -2,9 +2,9 @@
 
 # Purpose: Create Step Function state machine
 # Author:  Gary A. Stafford (November 2020)
-# Usage Example: python3 ./update_state_machine.py \
+# Usage Example: python3 ./create_state_machine.py \
 #                   --definition-file step_function_emr_analyze.json \
-#                   --state-machine-arn arn:aws:states:us-east-1:123456789012:stateMachine:EMR-Demo-Analysis
+#                   --state-machine EMR-Demo-Analysis
 
 import argparse
 import logging
@@ -23,21 +23,22 @@ def main():
     args = parse_args()
     params = get_parameters()
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     definition_file = open(f'{dir_path}/step_functions/definitions/{args.definition_file}', 'r')
     definition = definition_file.read()
 
-    create_state_machine(definition, args.state_machine_arn, params['sm_log_group_arn'], params['sm_role_arn'])
+    create_state_machine(definition, args.state_machine, params['sm_log_group_arn'], params['sm_role_arn'])
 
 
-def create_state_machine(definition, state_machine_arn, sm_log_group_arn, sm_role_arn):
-    """Updates an existing AWS Step Functions state machine"""
+def create_state_machine(definition, sm_name, sm_log_group_arn, sm_role_arn):
+    """Creates the AWS Step Functions state machine"""
 
     try:
-        response = step_functions_client.update_state_machine(
-            stateMachineArn=state_machine_arn,
+        response = step_functions_client.create_state_machine(
+            name=sm_name,
             definition=definition,
             roleArn=sm_role_arn,
+            type='STANDARD',
             loggingConfiguration={
                 'level': 'ERROR',
                 'includeExecutionData': False,
@@ -48,7 +49,13 @@ def create_state_machine(definition, state_machine_arn, sm_log_group_arn, sm_rol
                         }
                     },
                 ]
-            }
+            },
+            tags=[
+                {
+                    'key': 'Project',
+                    'value': 'EMR Demo'
+                },
+            ]
         )
         print(f"Response: {response}")
     except ClientError as e:
@@ -62,7 +69,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description='Arguments required for script.')
     parser.add_argument('-d', '--definition-file', required=True, help='Name of definition file')
-    parser.add_argument('-a', '--state-machine-arn', required=True, help='Arn of state machine to update')
+    parser.add_argument('-s', '--state-machine', required=True, help='Name of state machine to create')
     args = parser.parse_args()
     return args
 

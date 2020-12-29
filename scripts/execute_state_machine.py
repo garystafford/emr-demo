@@ -21,8 +21,7 @@ def main():
     args = parse_args()
     state_machine_arn = get_state_machine_arn(args.state_machine)  # e.g. 'EMR-Demo-Analysis'
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
+    dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     input_params_file = open(f'{dir_path}/step_functions/inputs/{args.inputs_file}', 'r')
     input_params = input_params_file.read()
 

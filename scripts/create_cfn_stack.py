@@ -38,7 +38,7 @@ def main():
     put_ssm_parameter(bucket_name)
 
     # upload files
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     upload_file(f'{dir_path}/bootstrap_emr/bootstrap_actions.sh', bucket_name, 'bootstrap_actions.sh')
 
     # create cfn stack
