@@ -77,7 +77,6 @@
         "TerminateCluster.$": "$.TerminateCluster",
         "ClusterId.$": "$.CreateClusterResult.ClusterId",
         "ArgsBakerySalesSsm.$": "$.ArgsBakerySalesSsm",
-        "ArgsMovieChoicesSsm.$": "$.ArgsMovieChoicesSsm",
         "ArgsMovieRatingsSsm.$": "$.ArgsMovieRatingsSsm",
         "ArgsStockVolatilitySsm.$": "$.ArgsStockVolatilitySsm"
       },
