@@ -15,10 +15,10 @@ Project files for the post, [Running PySpark Applications on Amazon EMR: Methods
 
 ![Architecture](images/Workflow_Architecture.png)
 
-### Step Function
+## Step Function
 
-#### EMR Analyze
+### EMR Analyze
 ![step_function_emr_analyze](images/step_function_emr_analyze.png)
 
-#### EMR Process
+### EMR Process
 ![step_function_emr_process](images/step_function_emr_process.png)
